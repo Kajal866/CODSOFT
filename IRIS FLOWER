@@ -1,0 +1,167 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn import datasets
+
+from sklearn import metrics
+%pylab inline 
+%matplotlib inline
+
+import warnings 
+warnings.filterwarnings('ignore')
+     
+
+iris = pd.read_csv('/content/drive/MyDrive/iris/IRIS.csv')
+
+iris.head()
+
+# Dataset First Look From Bottom Five Rows & Columns
+iris.tail()
+
+iris.shape
+
+iris.info()
+
+duplicated_values_count = len(iris[iris.duplicated()])
+
+print("Number of duplicated values:", duplicated_values_count)
+
+iris.isnull().sum()
+
+iris= iris.rename(columns={'SepalLengthCm':'Sepal_Length',
+                           'SepalWidthCm':'Sepal_Width',
+                           'PetalLengthCm':'Petal_Length',
+                           'PetalWidthCm':'Petal_Width'})
+     
+
+iris.head()
+
+sns.heatmap(iris.isnull(), cmap='viridis', cbar=True)
+
+sns.FacetGrid(iris, hue="species",height=6).map(plt.scatter,"petal_length","sepal_width").add_legend()
+
+sns.pairplot(iris[['sepal_length','sepal_width','petal_length','petal_width','species']], hue="species",diag_kind='kde')     
+     
+
+# checking statistical features
+iris.describe().T
+
+flower_mapping = {'iris-setosa':0,'iris-versicolor':1,'iris-virginica':2}
+iris['species']=iris['species'].map(flower_mapping)
+
+iris.head()
+
+data=iris.values
+
+# slicing the matrices
+X=data[:,0:4]
+Y=data[:,4]
+
+print(X.shape)
+
+print(Y.shape)
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test= train_test_split(X,Y, test_size=0.2)
+
+print(X_train.shape)
+
+
+print(X_test.shape)
+
+print(y_train.shape)
+     
+
+print(y_test.shape)
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
+from sklearn.metrics import confusion_matrix
+
+model=DecisionTreeClassifier(criterion='entropy',max_depth=3)
+
+# load the iris datasets
+iris = datasets.load_iris()
+#df = pd.DataFrame(data.data, columns=data.feature_names)
+#df.head()
+iris = pd.DataFrame(data= np.c_[iris['data'], iris['target']],
+                     columns= iris['feature_names'] + ['target'])
+
+     
+
+from sklearn import datasets
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
+import numpy as np
+import matplotlib.pyplot as plt
+from ipywidgets import interact
+from IPython.display import display
+
+def Decision_Tree(Type, Depth):
+    # import some data to play with
+    iris = datasets.load_iris()
+    X = iris.data[:, :2]  # we only take the first two features.
+    Y = iris.target
+    h = .02  # step size in the mesh
+
+    # we create an instance of DecisionTreeClassifier and fit the data.
+    model = DecisionTreeClassifier(criterion=Type, max_depth=Depth)  
+    model.fit(X, Y)
+
+    # Plot the decision boundary. For that, we will assign a color to each
+    # point in the mesh [x_min, m_max]x[y_min, y_max].
+    x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
+    y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+    Z = model.predict(np.c_[xx.ravel(), yy.ravel()])
+
+    # Put the result into a color plot
+    Z = Z.reshape(xx.shape)
+    plt.figure(1, figsize=(4, 3))
+    plt.pcolormesh(xx, yy, Z, cmap=plt.cm.Paired)
+
+      # Plot also the training points
+    plt.scatter(X[:, 0], X[:, 1], c=Y, edgecolors='k', cmap=plt.cm.Paired)
+    plt.xlabel('Sepal length')
+    plt.ylabel('Sepal width')
+    plt.xlim(xx.min(), xx.max())
+    plt.ylim(yy.min(), yy.max())
+    plt.xticks(())
+    plt.yticks(())
+    plt.show()
+
+    model.fit(iris.data, iris.target)
+    expected = iris.target
+    predicted = model.predict(iris.data)
+    print(metrics.classification_report(expected, predicted))
+    print(metrics.confusion_matrix(expected, predicted))
+
+
+i = interact(Decision_Tree, Type=['gini', 'entropy'], Depth=(1, 10))
+
+
+from sklearn.tree import export_graphviz
+import pydotplus
+from IPython.display import Image
+import io
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier
+import six
+
+# Load the Iris dataset
+iris = load_iris()
+
+# Train a decision tree classifier
+clf = DecisionTreeClassifier()
+clf.fit(iris.data, iris.target)
+
+# Visualize the graph
+dot_data = io.StringIO()
+export_graphviz(clf, out_file=dot_data,  
+                feature_names=iris.feature_names,  
+                filled=True, rounded=True,
+                special_characters=True,
+                class_names=iris.target_names)
+graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+Image(graph.create_png())
